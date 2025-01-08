@@ -1,19 +1,11 @@
 package Modele;
 
 import enume.Visibilite;
-import enume.Type;
 
 public class Attribut {
-    private String nom;           // Nom de l'attribut
-    private Type type;            // Type de l'attribut (enum Type)
-    private Visibilite visibilite; // Visibilité de l'attribut (enum Visibilite)
-
-    // Constructeur
-    public Attribut(String nom, Type type, Visibilite visibilite) {
-        this.nom = nom;
-        this.type = type;
-        this.visibilite = visibilite;
-    }
+    private String nom;
+    private String type;
+    private Visibilite visibilite;
 
     // Getters et Setters
     public String getNom() {
@@ -24,11 +16,11 @@ public class Attribut {
         this.nom = nom;
     }
 
-    public Type getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(String type) {
         this.type = type;
     }
 

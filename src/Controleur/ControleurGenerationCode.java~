@@ -114,7 +114,7 @@ public class ControleurGenerationCode {
     private String cardinaliteToString(Cardinalite cardinalite) {
         CardinaliteEnum min = cardinalite.getMin();
         CardinaliteEnum max = cardinalite.getMax();
-        if (max == CardinaliteEnum.UN) {
+        if (max == 1) {
             return ""; // Simple référence unique
         } else {
             return "List"; // Liste pour les collections (multiplicité)

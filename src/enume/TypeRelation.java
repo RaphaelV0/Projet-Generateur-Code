@@ -3,6 +3,6 @@ package enume;
 public enum TypeRelation {
     COMPOSITION,
     AGGREGATION,
-    ASSO_FORTE,
-    ASSO_FAIBLE,
+    ASSOCIATION_FORTE,
+    ASSOCIATION_FAIBLE,
 }

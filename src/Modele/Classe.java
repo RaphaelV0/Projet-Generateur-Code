@@ -1,26 +1,15 @@
 package Modele;
 
-import java.util.ArrayList;
-import java.util.List;
 import enume.Visibilite;
+import java.util.List;
 
 public class Classe {
-    private String nom;  // Nom de la classe
-    private Visibilite visibilite;  // Visibilité de la classe
-    private List<Relation> relationsEntrantes;  // Relations où cette classe est la classe arrivée
-    private List<Relation> relationsSortantes;  // Relations où cette classe est la classe départ
-    private List<Attribut> attributs;  // Liste des attributs de la classe
-    private List<Methode> methodes;  // Liste des méthodes de la classe
-
-    // Constructeur
-    public Classe(String nom, Visibilite visibilite) {
-        this.nom = nom;
-        this.visibilite = visibilite;
-        this.relationsEntrantes = new ArrayList<>();
-        this.relationsSortantes = new ArrayList<>();
-        this.attributs = new ArrayList<>();
-        this.methodes = new ArrayList<>();
-    }
+    private String nom;
+    private Visibilite visibilite;
+    private List<Relation> relationsEntrantes;
+    private List<Relation> relationsSortantes;
+    private List<Attribut> attributs;
+    private List<Methode> methodes;
 
     // Getters et Setters
     public String getNom() {
@@ -31,6 +20,12 @@ public class Classe {
         this.nom = nom;
     }
 
+    public List<Attribut> getAttributs() {
+        return attributs;
+    }
+    public List<Methode> getMethodes() {
+        return methodes;
+    }
     public Visibilite getVisibilite() {
         return visibilite;
     }
@@ -43,31 +38,15 @@ public class Classe {
         return relationsEntrantes;
     }
 
-    public void addRelationEntrante(Relation relation) {
-        this.relationsEntrantes.add(relation);
+    public void setRelationsEntrantes(List<Relation> relationsEntrantes) {
+        this.relationsEntrantes = relationsEntrantes;
     }
 
     public List<Relation> getRelationsSortantes() {
         return relationsSortantes;
     }
 
-    public void addRelationSortante(Relation relation) {
-        this.relationsSortantes.add(relation);
-    }
-
-    public List<Attribut> getAttributs() {
-        return attributs;
-    }
-
-    public void addAttribut(Attribut attribut) {
-        this.attributs.add(attribut);
-    }
-
-    public List<Methode> getMethodes() {
-        return methodes;
-    }
-
-    public void addMethode(Methode methode) {
-        this.methodes.add(methode);
+    public void setRelationsSortantes(List<Relation> relationsSortantes) {
+        this.relationsSortantes = relationsSortantes;
     }
 }

@@ -1,14 +1,11 @@
 package Modele;
 
-import enume.Visibilite;
-
 import java.util.List;
 
 public class Methode {
     private String nom;
     private String type;
     private List<String> parametres;
-    private Visibilite visibilite;
 
     // Getters et Setters
     public String getNom() {
@@ -33,13 +30,5 @@ public class Methode {
 
     public void setParametres(List<String> parametres) {
         this.parametres = parametres;
-    }
-
-    public Visibilite getVisibilite() {
-        return visibilite;
-    }
-
-    public void setVisibilite(Visibilite visibilite) {
-        this.visibilite = visibilite;
     }
 }

@@ -1,24 +1,24 @@
 package Modele;
+
 import enume.TypeRelation;
+import enume.CardinaliteEnum;
+import Modele.Cardinalite;
 
 public class Relation {
-    private Classe classeDepart;  // Classe qui initie la relation
-    private Classe classeArrivee;  // Classe qui reçoit la relation
-    private TypeRelation typeRelation;  // Type de la relation
-    private Cardinalite cardinaliteGauche;  // Cardinalité pour la classe départ
-    private Cardinalite cardinaliteDroite;  // Cardinalité pour la classe arrivée
-
-    // Constructeur
-    public Relation(Classe classeDepart, Classe classeArrivee, TypeRelation typeRelation,
-                    Cardinalite cardinaliteGauche, Cardinalite cardinaliteDroite) {
-        this.classeDepart = classeDepart;
-        this.classeArrivee = classeArrivee;
-        this.typeRelation = typeRelation;
-        this.cardinaliteGauche = cardinaliteGauche;
-        this.cardinaliteDroite = cardinaliteDroite;
-    }
+    private TypeRelation typeRelation;
+    private Classe classeDepart;
+    private Classe classeArrivee;
+    private Cardinalite cardinalite;
 
     // Getters et Setters
+    public TypeRelation getTypeRelation() {
+        return typeRelation;
+    }
+
+    public void setTypeRelation(TypeRelation typeRelation) {
+        this.typeRelation = typeRelation;
+    }
+
     public Classe getClasseDepart() {
         return classeDepart;
     }
@@ -35,27 +35,11 @@ public class Relation {
         this.classeArrivee = classeArrivee;
     }
 
-    public TypeRelation getTypeRelation() {
-        return typeRelation;
+    public Cardinalite getCardinalite() {
+        return cardinalite;
     }
 
-    public void setTypeRelation(TypeRelation typeRelation) {
-        this.typeRelation = typeRelation;
-    }
-
-    public Cardinalite getCardinaliteGauche() {
-        return cardinaliteGauche;
-    }
-
-    public void setCardinaliteGauche(Cardinalite cardinaliteGauche) {
-        this.cardinaliteGauche = cardinaliteGauche;
-    }
-
-    public Cardinalite getCardinaliteDroite() {
-        return cardinaliteDroite;
-    }
-
-    public void setCardinaliteDroite(Cardinalite cardinaliteDroite) {
-        this.cardinaliteDroite = cardinaliteDroite;
+    public void setCardinalite(Cardinalite cardinalite) {
+        this.cardinalite = cardinalite;
     }
 }

@@ -188,6 +188,8 @@ public class VueDiagrammeClasse extends Application {
     // Méthode pour générer le code
     private void genererCode() {
         if (controleurGenerationCode != null) {
+            controleurGenerationCode.recupererClasses();
+            controleurGenerationCode.recupererRelations();
             String code = controleurGenerationCode.genererCode();
             afficherCode(code);
         } else {

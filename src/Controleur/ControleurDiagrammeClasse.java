@@ -1,72 +1,110 @@
 package Controleur;
 
+import Modele.Classe;
+import Modele.Relation;
+import Modele.Attribut;
+import Modele.Methode;
 import Vue.VueDiagrammeClasse;
-import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseEvent;
+import enume.TypeRelation;
+import java.util.List;
 
 public class ControleurDiagrammeClasse {
 
     private VueDiagrammeClasse vue;
-    private ModeleDiagrammeClasse modele;
+    private List<Classe> classes;    // Liste des classes du modèle
+    private List<Relation> relations; // Liste des relations du modèle
 
-    // Constructeur du contrôleur
-    public ControleurDiagrammeClasse(VueDiagrammeClasse vue, ModeleDiagrammeClasse modele) {
+    public ControleurDiagrammeClasse(VueDiagrammeClasse vue) {
         this.vue = vue;
-        this.modele = modele;
-
-        // Associer le contrôleur à la vue
-        this.vue.setControleur(this);
     }
 
-    // Méthode pour initialiser les gestionnaires d'événements
-    public void initEventHandlers() {
-        // Gestion des événements pour les classes
-        MenuItem addClassItem = vue.getClassDropdown().getItems().get(0); // Ajouter Classe
-        MenuItem modifyClassItem = vue.getClassDropdown().getItems().get(1); // Modifier Classe
-        MenuItem deleteClassItem = vue.getClassDropdown().getItems().get(2); // Supprimer Classe
-
-        addClassItem.setOnAction(e -> handleAddClass());
-        modifyClassItem.setOnAction(e -> handleModifyClass());
-        deleteClassItem.setOnAction(e -> handleDeleteClass());
-
-        // Gestion des événements pour les relations
-        MenuItem addRelationItem = vue.getRelationDropdown().getItems().get(0); // Ajouter Relation
-        MenuItem modifyRelationItem = vue.getRelationDropdown().getItems().get(1); // Modifier Relation
-        MenuItem deleteRelationItem = vue.getRelationDropdown().getItems().get(2); // Supprimer Relation
-
-        addRelationItem.setOnAction(e -> handleAddRelation());
-        modifyRelationItem.setOnAction(e -> handleModifyRelation());
-        deleteRelationItem.setOnAction(e -> handleDeleteRelation());
-
-        // Gestion de l'événement pour générer le code
-        vue.getGenerateCodeButton().setOnAction(e -> generateCode());
+    // Ajouter une classe
+    public void ajouterClasseSurClic(MouseEvent event) {
+        // Exemple de création d'une nouvelle classe
+        Classe nouvelleClasse = new Classe();
+        nouvelleClasse.setNom("NouvelleClasse");
+        classes.add(nouvelleClasse);
+        vue.ajouterClasseVue(nouvelleClasse); // Mise à jour de la vue
+        vue.mettreAJourVue("Classe ajoutée : " + nouvelleClasse.getNom());
     }
 
-    // Exemple de gestion des événements
-    private void handleAddClass() {
-        System.out.println("Ajout d'une classe.");
+    // Modifier une classe
+    public void selectionnerClassePourModification(MouseEvent event) {
+        Classe classeSelectionnee = vue.getClasseSelectionnee();
+        if (classeSelectionnee != null) {
+            // Exemple de modification : changer le nom de la classe
+            classeSelectionnee.setNom("ClasseModifiee");
+            vue.mettreAJourClasseVue(classeSelectionnee); // Mise à jour de la vue
+            vue.mettreAJourVue("Classe modifiée : " + classeSelectionnee.getNom());
+        } else {
+            vue.mettreAJourVue("Aucune classe sélectionnée pour modification.");
+        }
     }
 
-    private void handleModifyClass() {
-        System.out.println("Modification d'une classe.");
+    // Supprimer une classe
+    public void supprimerClasseSurClic(MouseEvent event) {
+        Classe classeSelectionnee = vue.getClasseSelectionnee();
+        if (classeSelectionnee != null) {
+            classes.remove(classeSelectionnee);
+            vue.supprimerClasseVue(classeSelectionnee); // Mise à jour de la vue
+            vue.mettreAJourVue("Classe supprimée : " + classeSelectionnee.getNom());
+        } else {
+            vue.mettreAJourVue("Aucune classe sélectionnée pour suppression.");
+        }
     }
 
-    private void handleDeleteClass() {
-        System.out.println("Suppression d'une classe.");
+    // Créer une relation
+    public void creerRelation(MouseEvent event) {
+        Relation nouvelleRelation = new Relation();
+        // Exemple de configuration de la relation
+        nouvelleRelation.setTypeRelation(TypeRelation.ASSOCIATION_FORTE);
+        nouvelleRelation.setClasseDepart(vue.getClasseDepartSelectionnee());
+        nouvelleRelation.setClasseArrivee(vue.getClasseArriveeSelectionnee());
+
+        if (nouvelleRelation.getClasseDepart() != null && nouvelleRelation.getClasseArrivee() != null) {
+            relations.add(nouvelleRelation);
+            vue.ajouterRelationVue(nouvelleRelation); // Mise à jour de la vue
+            vue.mettreAJourVue("Relation ajoutée entre " +
+                    nouvelleRelation.getClasseDepart().getNom() + " et " +
+                    nouvelleRelation.getClasseArrivee().getNom());
+        } else {
+            vue.mettreAJourVue("Veuillez sélectionner les classes pour la relation.");
+        }
     }
 
-    private void handleAddRelation() {
-        System.out.println("Ajout d'une relation.");
+    // Modifier une relation
+    public void selectionnerRelationPourModification(MouseEvent event) {
+        Relation relationSelectionnee = vue.getRelationSelectionnee();
+        if (relationSelectionnee != null) {
+            // Exemple de modification : changer le type de la relation
+            relationSelectionnee.setTypeRelation(TypeRelation.COMPOSITION);
+            vue.mettreAJourRelationVue(relationSelectionnee); // Mise à jour de la vue
+            vue.mettreAJourVue("Relation modifiée.");
+        } else {
+            vue.mettreAJourVue("Aucune relation sélectionnée pour modification.");
+        }
     }
 
-    private void handleModifyRelation() {
-        System.out.println("Modification d'une relation.");
+    // Supprimer une relation
+    public void supprimerRelationSurClic(MouseEvent event) {
+        Relation relationSelectionnee = vue.getRelationSelectionnee();
+        if (relationSelectionnee != null) {
+            relations.remove(relationSelectionnee);
+            vue.supprimerRelationVue(relationSelectionnee); // Mise à jour de la vue
+            vue.mettreAJourVue("Relation supprimée.");
+        } else {
+            vue.mettreAJourVue("Aucune relation sélectionnée pour suppression.");
+        }
     }
 
-    private void handleDeleteRelation() {
-        System.out.println("Suppression d'une relation.");
+    // Méthode pour récupérer les classes (optionnelle si nécessaire pour le modèle)
+    public List<Classe> getClasses() {
+        return classes;
     }
 
-    private void generateCode() {
-        System.out.println("Génération du code.");
+    // Méthode pour récupérer les relations (optionnelle si nécessaire pour le modèle)
+    public List<Relation> getRelations() {
+        return relations;
     }
 }

@@ -1,46 +1,67 @@
 package Controleur;
 
-import Modele.Classe;
 import Modele.Relation;
-import enume.Visibilite;
+import Modele.Classe;
+import Vue.VueDiagrammeClasse;
+import javafx.scene.input.MouseEvent;
+import enume.TypeRelation;
+
+import java.util.List;
 
 public class ControleurRelation {
 
-    private Vue.VueDiagrammeClasse vue;
+    private List<Relation> relations;
+    private VueDiagrammeClasse vue;
 
     // Constructeur
-    public ControleurRelation(Vue.VueDiagrammeClasse vue) {
+    public ControleurRelation(List<Relation> relations, VueDiagrammeClasse vue) {
+        this.relations = relations;
         this.vue = vue;
     }
 
-    // Méthode pour ajouter une relation entre deux classes
-    public void ajouterRelation(Classe classeSource, Classe classeCible) {
-        // Logique pour créer et ajouter la relation
-        Relation relation = new Relation(classeSource, classeCible);
-        classeSource.ajouterRelationSortante(relation);  // Ajoute la relation sortante à la classe source
-        classeCible.ajouterRelationEntrante(relation);   // Ajoute la relation entrante à la classe cible
-
-        // Optionnel : vous pouvez mettre à jour la vue, si nécessaire
-        // Par exemple, ajouter un visuel de la relation sur le diagramme
-        System.out.println("Relation ajoutée entre " + classeSource.getNom() + " et " + classeCible.getNom());
+    // Méthode pour ajouter une nouvelle relation
+    public void ajouterRelation(Classe classeDepart, Classe classeArrivee, TypeRelation typeRelation) {
+        // Création de la relation avec le constructeur ajusté
+        Relation nouvelleRelation = new Relation(classeDepart, classeArrivee, typeRelation);
+        relations.add(nouvelleRelation);
+        vue.mettreAJourVue("Relation ajoutée entre " + classeDepart.getNom() + " et " + classeArrivee.getNom() +
+                " de type " + typeRelation);
     }
 
-    // Méthode pour modifier une relation (exemple de méthode, à adapter selon vos besoins)
-    public void modifierRelation(Relation relation) {
-        // Logique de modification de la relation
-        System.out.println("Modification de la relation.");
+    // Méthode pour modifier une relation existante
+    public void modifierRelation(Relation relation, TypeRelation nouveauType) {
+        relation.setTypeRelation(nouveauType);
+        vue.mettreAJourVue("Relation modifiée : " + relation.getClasseDepart().getNom() +
+                " -> " + relation.getClasseArrivee().getNom() + " (" + nouveauType + ")");
     }
 
     // Méthode pour supprimer une relation
     public void supprimerRelation(Relation relation) {
-        // Logique pour supprimer la relation
-        Classe classeSource = relation.getClasseSource();
-        Classe classeCible = relation.getClasseCible();
+        relations.remove(relation);
+        vue.mettreAJourVue("Relation supprimée entre " + relation.getClasseDepart().getNom() +
+                " et " + relation.getClasseArrivee().getNom());
+    }
 
-        classeSource.getRelationsSortantes().remove(relation);
-        classeCible.getRelationsEntrantes().remove(relation);
+    // Méthode pour gérer la sélection d'une relation
+    public void selectionnerRelationPourModification(MouseEvent event) {
+        Relation relationSelectionnee = getRelationDepuisVue();
+        if (relationSelectionnee != null) {
+            vue.mettreAJourVue("Relation sélectionnée pour modification : " +
+                    relationSelectionnee.getClasseDepart().getNom() + " -> " +
+                    relationSelectionnee.getClasseArrivee().getNom());
+        } else {
+            vue.mettreAJourVue("Aucune relation sélectionnée.");
+        }
+    }
 
-        // Optionnel : Mise à jour de la vue pour supprimer la représentation graphique
-        System.out.println("Relation supprimée entre " + classeSource.getNom() + " et " + classeCible.getNom());
+    // Méthode pour récupérer la relation sélectionnée depuis la vue
+    private Relation getRelationDepuisVue() {
+        Relation relationSelectionnee = vue.getRelationSelectionnee();
+        if (relationSelectionnee != null) {
+            return relationSelectionnee;
+        } else {
+            vue.mettreAJourVue("Aucune relation sélectionnée.");
+            return null;
+        }
     }
 }

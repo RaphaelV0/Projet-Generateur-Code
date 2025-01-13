@@ -1,67 +1,110 @@
 package Controleur;
 
-import Modele.Relation;
 import Modele.Classe;
+import Modele.Relation;
 import Vue.VueDiagrammeClasse;
-import javafx.scene.input.MouseEvent;
 import enume.TypeRelation;
+import enume.CardinaliteEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ControleurRelation {
 
+    private final VueDiagrammeClasse vue;
+    private final ControleurDiagrammeClasse controleurDiagrammeClasse;
     private List<Relation> relations;
-    private VueDiagrammeClasse vue;
+    private Classe classeSelectionnee1;
+    private Classe classeSelectionnee2;
+    private Relation relationSelectionnee;
 
-    // Constructeur
-    public ControleurRelation(List<Relation> relations, VueDiagrammeClasse vue) {
-        this.relations = relations;
+    public ControleurRelation(VueDiagrammeClasse vue, ControleurDiagrammeClasse controleurDiagrammeClasse) {
         this.vue = vue;
+        this.controleurDiagrammeClasse = controleurDiagrammeClasse;
+        this.relations = new ArrayList<>();
+        this.relationSelectionnee = null;
     }
 
-    // Méthode pour ajouter une nouvelle relation
-    public void ajouterRelation(Classe classeDepart, Classe classeArrivee, TypeRelation typeRelation) {
-        // Création de la relation avec le constructeur ajusté
-        Relation nouvelleRelation = new Relation(classeDepart, classeArrivee, typeRelation);
-        relations.add(nouvelleRelation);
-        vue.mettreAJourVue("Relation ajoutée entre " + classeDepart.getNom() + " et " + classeArrivee.getNom() +
-                " de type " + typeRelation);
+    // Méthode pour obtenir la relation sélectionnée
+    public Relation obtenirRelationSelectionnee() {
+        return relationSelectionnee;
     }
 
-    // Méthode pour modifier une relation existante
-    public void modifierRelation(Relation relation, TypeRelation nouveauType) {
-        relation.setTypeRelation(nouveauType);
-        vue.mettreAJourVue("Relation modifiée : " + relation.getClasseDepart().getNom() +
-                " -> " + relation.getClasseArrivee().getNom() + " (" + nouveauType + ")");
+    // Méthode pour sélectionner une relation
+    public void selectionnerRelation(Relation relation) {
+        this.relationSelectionnee = relation;
+        vue.mettreAJourVue("Relation sélectionnée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
+    }
+
+    // Méthode pour ajouter une relation entre deux classes
+    public void ajouterRelation(Classe classe1, Classe classe2, TypeRelation typeRelation, CardinaliteEnum cardinaliteEnum) {
+        if (classe1 == null || classe2 == null) {
+            vue.mettreAJourVue("Erreur : Les deux classes doivent être sélectionnées pour ajouter une relation.");
+            return;
+        }
+
+        Relation relation = new Relation(classe1, classe2, typeRelation, cardinaliteEnum, cardinaliteEnum);
+        relations.add(relation);
+        vue.ajouterRelationVue(relation);
+        vue.mettreAJourVue("Relation ajoutée entre " + classe1.getNom() + " et " + classe2.getNom() + " (" + typeRelation.getLabel() + ", " + cardinaliteEnum.getLabel() + ")");
+    }
+
+    // Méthode pour modifier une relation
+    public void modifierRelation(Relation relation, TypeRelation nouveauTypeRelation, CardinaliteEnum nouvelleCardinalite) {
+        // Modifier les détails de la relation
+        relation.setTypeRelation(nouveauTypeRelation);
+        relation.setCardinalite(nouvelleCardinalite);
+
+        // Redessiner la relation modifiée
+        vue.mettreAJourVue("Relation modifiée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
     }
 
     // Méthode pour supprimer une relation
     public void supprimerRelation(Relation relation) {
+        // Supprimer la relation de la liste
         relations.remove(relation);
-        vue.mettreAJourVue("Relation supprimée entre " + relation.getClasseDepart().getNom() +
-                " et " + relation.getClasseArrivee().getNom());
+
+        // Supprimer la relation de la vue
+        vue.supprimerRelation(relation);
+
+        // Mettre à jour la vue avec un message de confirmation
+        vue.mettreAJourVue("Relation supprimée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
     }
 
-    // Méthode pour gérer la sélection d'une relation
-    public void selectionnerRelationPourModification(MouseEvent event) {
-        Relation relationSelectionnee = getRelationDepuisVue();
-        if (relationSelectionnee != null) {
-            vue.mettreAJourVue("Relation sélectionnée pour modification : " +
-                    relationSelectionnee.getClasseDepart().getNom() + " -> " +
-                    relationSelectionnee.getClasseArrivee().getNom());
+    // Méthode pour sélectionner une classe à relier
+    public void selectionnerClassePourRelation(Classe classe) {
+        // Si c'est la première classe sélectionnée
+        if (classeSelectionnee1 == null) {
+            classeSelectionnee1 = classe;
+            vue.mettreAJourVue("Première classe sélectionnée : " + classe.getNom());
         } else {
-            vue.mettreAJourVue("Aucune relation sélectionnée.");
+            classeSelectionnee2 = classe;
+            vue.mettreAJourVue("Deuxième classe sélectionnée : " + classe.getNom());
+
+            // Si les deux classes sont sélectionnées, demander à l'utilisateur de choisir le type de relation
+            if (classeSelectionnee1 != null && classeSelectionnee2 != null) {
+                // Demander à la vue d'afficher un dialogue pour choisir le type de relation et la cardinalité
+                vue.afficherDialogueRelation(classeSelectionnee1, classeSelectionnee2);
+            }
         }
     }
 
-    // Méthode pour récupérer la relation sélectionnée depuis la vue
-    private Relation getRelationDepuisVue() {
-        Relation relationSelectionnee = vue.getRelationSelectionnee();
-        if (relationSelectionnee != null) {
-            return relationSelectionnee;
+    // Méthode pour réinitialiser la sélection des classes
+    public void reinitialiserSelection() {
+        classeSelectionnee1 = null;
+        classeSelectionnee2 = null;
+        vue.mettreAJourVue("Sélection réinitialisée.");
+    }
+    public List<Relation> getRelations() {
+        return relations;
+    }
+    // Méthode pour créer une relation depuis la vue après la sélection des classes et du type de relation
+    public void creerRelation(TypeRelation typeRelation, CardinaliteEnum cardinaliteEnum) {
+        if (classeSelectionnee1 != null && classeSelectionnee2 != null) {
+            ajouterRelation(classeSelectionnee1, classeSelectionnee2, typeRelation, cardinaliteEnum);
+            reinitialiserSelection(); // Réinitialiser la sélection des classes après création de la relation
         } else {
-            vue.mettreAJourVue("Aucune relation sélectionnée.");
-            return null;
+            vue.mettreAJourVue("Erreur : Les deux classes doivent être sélectionnées avant de créer une relation.");
         }
     }
 }

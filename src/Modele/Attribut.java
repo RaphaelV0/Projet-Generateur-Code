@@ -1,34 +1,23 @@
 package Modele;
 
 import enume.Visibilite;
-
+import enume.Type;
 public class Attribut {
     private String nom;
-    private String type;
+    private Type type;
     private Visibilite visibilite;
 
-    // Getters et Setters
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
+    public Attribut(String nom, Type type, Visibilite visibilite) {
         this.nom = nom;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
         this.type = type;
-    }
-
-    public Visibilite getVisibilite() {
-        return visibilite;
-    }
-
-    public void setVisibilite(Visibilite visibilite) {
         this.visibilite = visibilite;
     }
+
+    // Getters et setters
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
+    public Type getType() { return type; }
+    public void setType(Type type) { this.type = type; }
+    public Visibilite getvisibilite() { return visibilite; }
+    public void setvisibilite(Visibilite visibilite) { this.visibilite = visibilite; }
 }

@@ -1,44 +1,42 @@
 package Vue;
 
+import Modele.Classe;
+import Modele.Relation;
 import Controleur.ControleurDiagrammeClasse;
+import Controleur.ControleurRelation;
 import Controleur.ControleurGenerationCode;
+import enume.Visibilite;
+import enume.Type;
+import enume.CardinaliteEnum;
+import enume.TypeRelation;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
-import javafx.stage.FileChooser;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import Modele.Classe;
-import Modele.Relation;
-import enume.Visibilite;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Optional;
-import javafx.scene.input.MouseEvent;
 
 public class VueDiagrammeClasse extends Application {
 
-    private Pane workspacePane; // Zone de travail graphique
-    private MenuButton classDropdown; // Liste déroulante pour les classes
-    private MenuButton relationDropdown; // Liste déroulante pour les relations
-    private Button generateCodeButton; // Bouton pour générer le code
-    private Label notificationLabel; // Label pour afficher les notifications
+    private Pane workspacePane;  // Zone de travail graphique
+    private MenuButton classDropdown;  // Liste déroulante pour les classes
+    private MenuButton relationDropdown;  // Liste déroulante pour les relations
+    private Button generateCodeButton;  // Bouton pour générer le code
+    private Label notificationLabel;  // Label pour afficher les notifications
 
-    private ControleurDiagrammeClasse controleur; // Référence au contrôleur de diagramme de classe
-    private ControleurGenerationCode controleurGenerationCode; // Référence au contrôleur de génération de code
+    private ControleurDiagrammeClasse controleurDiagrammeClasse;  // Contrôleur des classes
+    private ControleurRelation controleurRelation;  // Contrôleur des relations
+    private ControleurGenerationCode controleurGenerationCode;  // Contrôleur de génération de code
 
-    // Fichier de sauvegarde par défaut (emplacement temporaire pour la sauvegarde rapide)
-    private File defaultSaveFile = null;
+    private Classe classeSelectionnee;  // Classe actuellement sélectionnée
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Générateur de Code UML");
+        primaryStage.setTitle("Générateur de Code JAVA");
 
         // Initialisation de l'interface
         BorderPane root = new BorderPane();
@@ -62,8 +60,11 @@ public class VueDiagrammeClasse extends Application {
     }
 
     // Méthode pour connecter les contrôleurs
-    public void connecterControleur(ControleurDiagrammeClasse controleurDiagrammeClasse, ControleurGenerationCode controleurGenerationCode) {
-        this.controleur = controleurDiagrammeClasse;
+    public void connecterControleurs(ControleurDiagrammeClasse controleurDiagrammeClasse,
+                                     ControleurRelation controleurRelation,
+                                     ControleurGenerationCode controleurGenerationCode) {
+        this.controleurDiagrammeClasse = controleurDiagrammeClasse;
+        this.controleurRelation = controleurRelation;
         this.controleurGenerationCode = controleurGenerationCode;
     }
 
@@ -115,7 +116,7 @@ public class VueDiagrammeClasse extends Application {
 
         // Bouton "Générer le Code"
         generateCodeButton = new Button("Générer le Code");
-        generateCodeButton.setOnAction(e -> genererCode());
+        generateCodeButton.setOnAction(e -> controleurGenerationCode.genererCode());
 
         // Ajouter les éléments au panneau de contrôle
         controlPanel.getChildren().addAll(classDropdown, relationDropdown, generateCodeButton);
@@ -128,119 +129,132 @@ public class VueDiagrammeClasse extends Application {
         root.setBottom(bottomPanel);
 
         // Actions des menus
-        addClassItem.setOnAction(e -> controleur.ajouterClasseSurClic(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
-        modifyClassItem.setOnAction(e -> controleur.selectionnerClassePourModification(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
-        deleteClassItem.setOnAction(e -> controleur.supprimerClasseSurClic(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
+        addClassItem.setOnAction(e -> workspacePane.setOnMouseClicked(event -> controleurDiagrammeClasse.ajouterClasseSurClic(event)));
+        modifyClassItem.setOnAction(e -> workspacePane.setOnMouseClicked(event -> controleurDiagrammeClasse.selectionnerClassePourModification(event)));
+        deleteClassItem.setOnAction(e -> workspacePane.setOnMouseClicked(event -> controleurDiagrammeClasse.supprimerClasseSurClic(event)));
 
-        addRelationItem.setOnAction(e -> controleur.creerRelation(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
-        modifyRelationItem.setOnAction(e -> controleur.selectionnerRelationPourModification(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
-        deleteRelationItem.setOnAction(e -> controleur.supprimerRelationSurClic(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, null, 0, false, false, false, false, false, false, false, false, false, false, null)));
-    }
-
-    // Méthode pour ouvrir un fichier
-    private void ouvrirFichier() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Ouvrir un fichier UML");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers UML", "*.uml"));
-        File file = fileChooser.showOpenDialog(null);
-
-        if (file != null) {
-            try {
-                String contenu = new String(Files.readAllBytes(Paths.get(file.getPath())));
-                mettreAJourVue("Fichier ouvert : " + file.getName());
-                // TODO: Charger les données dans le workspace
-            } catch (IOException ex) {
-                mettreAJourVue("Erreur lors de l'ouverture du fichier.");
-                ex.printStackTrace();
+        // Actions des menus Relation
+        addRelationItem.setOnAction(e -> {
+            if (classeSelectionnee != null) {
+                controleurRelation.selectionnerClassePourRelation(classeSelectionnee); // Action pour choisir la classe liée
+            } else {
+                mettreAJourVue("Veuillez sélectionner une classe avant d'ajouter une relation.");
             }
-        }
-    }
-
-    // Méthode pour enregistrer sous un nouveau fichier
-    private void enregistrerSous() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Enregistrer sous");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers UML", "*.uml"));
-        File file = fileChooser.showSaveDialog(null);
-
-        if (file != null) {
-            defaultSaveFile = file;
-            sauvegarder();
-        }
-    }
-
-    // Méthode pour sauvegarder dans le fichier par défaut
-    private void sauvegarder() {
-        if (defaultSaveFile != null) {
-            try {
-                String contenu = "Exemple de contenu UML";
-                Files.write(Paths.get(defaultSaveFile.getPath()), contenu.getBytes());
-                mettreAJourVue("Fichier sauvegardé : " + defaultSaveFile.getName());
-            } catch (IOException ex) {
-                mettreAJourVue("Erreur lors de la sauvegarde.");
-                ex.printStackTrace();
+        });
+        modifyRelationItem.setOnAction(e -> {
+            Relation relationSelectionnee = controleurRelation.obtenirRelationSelectionnee();
+            if (relationSelectionnee != null) {
+                controleurRelation.modifierRelation(relationSelectionnee, TypeRelation.HERITAGE, CardinaliteEnum.UN);
+            } else {
+                mettreAJourVue("Aucune relation sélectionnée pour modification.");
             }
-        } else {
-            mettreAJourVue("Aucun fichier par défaut. Utilisez 'Enregistrer sous...' pour spécifier un fichier.");
-        }
-    }
-
-    // Méthode pour générer le code
-    private void genererCode() {
-        if (controleurGenerationCode != null) {
-            String code = controleurGenerationCode.genererCode();
-            afficherCode(code);
-        } else {
-            mettreAJourVue("Erreur : Contrôleur de génération de code non connecté.");
-        }
-    }
-
-    // Méthode pour afficher le code généré
-    public void afficherCode(String code) {
-        TextArea codeArea = new TextArea(code);
-        codeArea.setEditable(false);
-        codeArea.setWrapText(true);
-        codeArea.setPrefHeight(300);
-        workspacePane.getChildren().clear();
-        workspacePane.getChildren().add(codeArea);
+        });
+        deleteRelationItem.setOnAction(e -> {
+            Relation relationSelectionnee = controleurRelation.obtenirRelationSelectionnee();
+            if (relationSelectionnee != null) {
+                controleurRelation.supprimerRelation(relationSelectionnee);
+            } else {
+                mettreAJourVue("Aucune relation sélectionnée pour suppression.");
+            }
+        });
     }
 
     // Méthode pour ajouter une classe dans la vue
     public void ajouterClasseVue(Classe classe) {
-        Label classeLabel = new Label(classe.getNom());
-        classeLabel.setStyle("-fx-border-color: black; -fx-padding: 5;");
-        classeLabel.setLayoutX(50); // Position par défaut (modifiable)
-        classeLabel.setLayoutY(50); // Position par défaut (modifiable)
-        workspacePane.getChildren().add(classeLabel);
-    }
-
-    // Méthode pour mettre à jour une classe dans la vue
-    public void mettreAJourClasseVue(Classe classe) {
-        // Mise à jour visuelle de la classe (à implémenter selon les besoins)
-        mettreAJourVue("Classe mise à jour : " + classe.getNom());
-    }
-
-    // Méthode pour supprimer une classe de la vue
-    public void supprimerClasseVue(Classe classe) {
-        workspacePane.getChildren().removeIf(node -> node instanceof Label && ((Label) node).getText().equals(classe.getNom()));
+        Text textClasse = new Text(classe.getX(), classe.getY(), classe.getNom());
+        textClasse.setOnMouseClicked(event -> {
+            classeSelectionnee = classe;
+            textClasse.setStyle("-fx-font-weight: bold; -fx-fill: blue;");
+            mettreAJourVue("Classe sélectionnée: " + classe.getNom());
+        });
+        workspacePane.getChildren().add(textClasse);
     }
 
     // Méthode pour ajouter une relation dans la vue
     public void ajouterRelationVue(Relation relation) {
-        Line ligneRelation = new Line(100, 100, 200, 200); // Position de départ/arrivée fictive
-        workspacePane.getChildren().add(ligneRelation);
-        mettreAJourVue("Relation ajoutée.");
+        double x1 = relation.getClasse1().getX();
+        double y1 = relation.getClasse1().getY();
+        double x2 = relation.getClasse2().getX();
+        double y2 = relation.getClasse2().getY();
+
+        Line ligneRelation = new Line(x1, y1, x2, y2);
+        ligneRelation.setStrokeWidth(2);
+
+        // Notifier le contrôleur lorsqu'une relation est sélectionnée
+        ligneRelation.setOnMouseClicked(event -> {
+            controleurRelation.selectionnerRelation(relation); // Appel au contrôleur pour sélectionner la relation
+            mettreAJourVue("Relation sélectionnée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
+        });
+
+        workspacePane.getChildren().addAll(ligneRelation, new Text((x1 + x2) / 2, (y1 + y2) / 2, relation.getTypeRelation().getLabel() + " (" + relation.getCardinaliteCible().getLabel() + ")"));
+    }
+    // Méthode pour afficher un dialogue pour choisir la relation
+    public void afficherDialogueRelation(Classe classe1, Classe classe2) {
+        // Créer un dialogue pour choisir le type de relation et la cardinalité
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Sélection de la relation");
+
+        // Créer les boutons radio pour le type de relation
+        ToggleGroup typeRelationGroup = new ToggleGroup();
+        RadioButton inheritanceRadioButton = new RadioButton("Héritage");
+        inheritanceRadioButton.setToggleGroup(typeRelationGroup);
+        RadioButton associationRadioButton = new RadioButton("Association");
+        associationRadioButton.setToggleGroup(typeRelationGroup);
+
+        // Créer un combo box pour choisir la cardinalité
+        ComboBox<CardinaliteEnum> cardinaliteComboBox = new ComboBox<>();
+        cardinaliteComboBox.getItems().setAll(CardinaliteEnum.values());
+
+        // Ajouter les éléments au dialogue
+        VBox vbox = new VBox(10, inheritanceRadioButton, associationRadioButton, cardinaliteComboBox);
+        vbox.setStyle("-fx-padding: 10;");
+        dialog.getDialogPane().setContent(vbox);
+
+        // Ajouter les boutons de confirmation
+        ButtonType confirmButtonType = new ButtonType("Confirmer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
+
+        // Gérer la confirmation du choix
+        dialog.setResultConverter(button -> {
+            if (button == confirmButtonType) {
+                TypeRelation selectedTypeRelation = inheritanceRadioButton.isSelected() ? TypeRelation.HERITAGE : TypeRelation.ASSOCIATION;
+                CardinaliteEnum selectedCardinalite = cardinaliteComboBox.getValue();
+                // Appeler le contrôleur pour créer la relation
+                controleurRelation.creerRelation(selectedTypeRelation, selectedCardinalite);
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
     }
 
-    // Méthode pour mettre à jour une relation dans la vue
-    public void mettreAJourRelationVue(Relation relation) {
-        // Mise à jour visuelle de la relation (à implémenter selon les besoins)
-        mettreAJourVue("Relation mise à jour.");
+    public Classe getClasseSelectionnee() {
+        return classeSelectionnee;  // La variable classeSelectionnee est déjà définie dans ta classe
     }
+    public void supprimerClasseVue(Classe classe) {
+        // Trouver le Text représentant la classe et le retirer
+        workspacePane.getChildren().removeIf(node -> node instanceof Text && ((Text) node).getText().equals(classe.getNom()));
+        mettreAJourVue("Classe supprimée : " + classe.getNom());
+    }
+    // Méthode pour supprimer une relation dans la vue
+    public void supprimerRelation(Relation relation) {
+        double x1 = relation.getClasse1().getX();
+        double y1 = relation.getClasse1().getY();
+        double x2 = relation.getClasse2().getX();
+        double y2 = relation.getClasse2().getY();
 
-    // Méthode pour supprimer une relation de la vue
-    public void supprimerRelationVue(Relation relation) {
-        workspacePane.getChildren().removeIf(node -> node instanceof Line); // Suppression simplifiée
+        // Trouver et supprimer la ligne représentant la relation
+        workspacePane.getChildren().removeIf(node -> node instanceof Line &&
+                ((Line) node).getStartX() == x1 &&
+                ((Line) node).getStartY() == y1 &&
+                ((Line) node).getEndX() == x2 &&
+                ((Line) node).getEndY() == y2);
+
+        // Vous pouvez aussi supprimer le texte de la relation si vous en affichez un
+        workspacePane.getChildren().removeIf(node -> node instanceof Text &&
+                ((Text) node).getText().contains(relation.getTypeRelation().getLabel()));
+
+        mettreAJourVue("Relation supprimée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
     }
 
     // Méthode pour mettre à jour la vue avec un message
@@ -248,41 +262,33 @@ public class VueDiagrammeClasse extends Application {
         notificationLabel.setText(message);
     }
 
-    // Getters pour les éléments de la vue
-    public Pane getWorkspacePane() {
-        return workspacePane;
+    // Placeholders pour les opérations de fichier
+    private void ouvrirFichier() {
+        mettreAJourVue("Fonction d'ouverture de fichier non implémentée.");
     }
 
-    public MenuButton getClassDropdown() {
-        return classDropdown;
+    private void enregistrerSous() {
+        mettreAJourVue("Fonction d'enregistrement non implémentée.");
     }
 
-    public MenuButton getRelationDropdown() {
-        return relationDropdown;
+    private void sauvegarder() {
+        mettreAJourVue("Fonction de sauvegarde non implémentée.");
     }
+    public Scene createScene() {
+        BorderPane root = new BorderPane();
 
-    public Button getGenerateCodeButton() {
-        return generateCodeButton;
-    }
+        // Initialiser les menus
+        initialiserMenus(root);
 
-    // Méthodes pour obtenir les classes et relations sélectionnées (fictives pour l'exemple)
-    public Classe getClasseSelectionnee() {
-        // Logique pour obtenir la classe sélectionnée dans l'interface graphique
-        return null; // Remplacer par la classe réelle sélectionnée
-    }
+        // Initialiser l'espace de travail
+        workspacePane = new Pane();
+        workspacePane.setStyle("-fx-background-color: white; -fx-border-color: black;");
+        workspacePane.setPrefSize(600, 400);
+        root.setCenter(workspacePane);
 
-    public Relation getRelationSelectionnee() {
-        // Logique pour obtenir la relation sélectionnée dans l'interface graphique
-        return null; // Remplacer par la relation réelle sélectionnée
-    }
+        // Initialiser le panneau inférieur
+        initialiserPanneauInferieur(root);
 
-    public Classe getClasseDepartSelectionnee() {
-        // Logique pour obtenir la classe de départ pour une relation
-        return null; // Remplacer par la classe réelle sélectionnée
-    }
-
-    public Classe getClasseArriveeSelectionnee() {
-        // Logique pour obtenir la classe d'arrivée pour une relation
-        return null; // Remplacer par la classe réelle sélectionnée
+        return new Scene(root, 800, 600); // Création de la scène avec la taille et le contenu de la fenêtre
     }
 }

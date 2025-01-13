@@ -11,7 +11,7 @@ public class Classe {
     private Visibilite visibilite;
     private List<Relation> relationsEntrantes;
     private List<Relation> relationsSortantes;
-    private List<Attribut> attributs;
+    private final List<Attribut> attributs;
     private List<Methode> methodes;
     private double X;
     private double Y;
@@ -54,8 +54,8 @@ public class Classe {
         return attributs;
     }
 
-    public void setAttributs(List<Attribut> attributs) {
-        this.attributs = attributs;
+    public void ajouterAttribut(Attribut attribut) {
+        this.attributs.add(attribut);
     }
 
     public List<Methode> getMethodes() {

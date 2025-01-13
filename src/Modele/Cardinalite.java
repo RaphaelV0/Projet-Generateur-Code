@@ -1,25 +1,23 @@
 package Modele;
 
-import enume.CardinaliteEnum;
-
 public class Cardinalite {
-    private CardinaliteEnum min;
-    private CardinaliteEnum max;
+    private Cardinalite min;
+    private Cardinalite max;
 
     // Getters et Setters
-    public CardinaliteEnum getMin() {
+    public Cardinalite getMin() {
         return min;
     }
 
-    public void setMin(CardinaliteEnum min) {
+    public void setMin(Cardinalite min) {
         this.min = min;
     }
 
-    public CardinaliteEnum getMax() {
+    public Cardinalite getMax() {
         return max;
     }
 
-    public void setMax(CardinaliteEnum max) {
+    public void setMax(Cardinalite max) {
         this.max = max;
     }
 }

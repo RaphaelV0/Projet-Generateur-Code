@@ -147,7 +147,7 @@ public class ControleurDiagrammeClasse {
                 Optional<Visibilite> visibilityResult = visibilityDialog.showAndWait();
                 Visibilite visibiliteMethode = visibilityResult.orElse(Visibilite.PUBLIC);
                 // Création de la liste des paramètres pour la méthode (vide par défaut ici)
-                List<Attribut> params = new ArrayList<>();
+                List<String> params = new ArrayList<>();
 
                 Methode nouvelleMethode = new Methode(nomMethode, typeRetour.name(), params , visibiliteMethode);
                 classe.ajouterMethode(nouvelleMethode);

@@ -7,5 +7,6 @@ public enum Type {
     BOOLEAN,
     CHAR,
     DOUBLE,
-    LONG
+    LONG,
+    VOID;
 }

@@ -1,0 +1,39 @@
+package Modele;
+
+import java.util.ArrayList;
+import java.util.List;
+
+// Classe ModeleDiagrammeClasse, agissant comme conteneur pour les entités du diagramme de classe
+public class ModeleDiagrammeClasse {
+
+    private List<Classe> classes;
+    private List<Relation> relations;
+
+    public ModeleDiagrammeClasse() {
+        this.classes = new ArrayList<>();
+        this.relations = new ArrayList<>();
+        System.out.println("Initialisation de ModeleDiagrammeClasse !");
+    }
+
+    // Ajouter une classe au modèle
+    public void ajouterClasse(Classe classe) {
+        classes.add(classe);
+        System.out.println("Classe ajoutée : " + classe.getNom());
+    }
+
+    // Ajouter une relation au modèle
+    public void ajouterRelation(Relation relation) {
+        relations.add(relation);
+        System.out.println("Relation ajoutée : " + relation.getNom());
+    }
+
+    // Récupérer toutes les classes
+    public List<Classe> getClasses() {
+        return classes;
+    }
+
+    // Récupérer toutes les relations
+    public List<Relation> getRelations() {
+        return relations;
+    }
+}

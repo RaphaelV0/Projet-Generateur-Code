@@ -1,88 +1,89 @@
 package Controleur;
 
 import Modele.Classe;
-import Modele.Attribut;
 import Modele.Methode;
+import Modele.Attribut;
 import Modele.Relation;
-import Modele.Cardinalite;
+import Vue.VueDiagrammeClasse;
 import enume.Visibilite;
 import enume.TypeRelation;
-import enume.CardinaliteEnum;
+import Controleur.ControleurDiagrammeClasse;
 
 import java.util.List;
 
 public class ControleurGenerationCode {
 
-    private List<Classe> classes;
+    private VueDiagrammeClasse vue;
+    private ControleurDiagrammeClasse controleurDiagrammeClasse;
+    private ControleurRelation controleurRelation;
 
-    public ControleurGenerationCode(List<Classe> classes) {
-        this.classes = classes;
+    public ControleurGenerationCode(VueDiagrammeClasse vue, ControleurDiagrammeClasse controleurDiagrammeClasse, ControleurRelation controleurRelation) {
+        this.vue = vue;
+        this.controleurDiagrammeClasse = controleurDiagrammeClasse;
+        this.controleurRelation = controleurRelation;
     }
 
-    public String genererCode() {
-        StringBuilder code = new StringBuilder();
+    // Méthode principale pour générer le code
+    public void genererCode() {
+        StringBuilder codeJava = new StringBuilder();
 
+        // Récupérer toutes les classes depuis le contrôleur de diagramme de classe
+        List<Classe> classes = controleurDiagrammeClasse.getClasses();
+
+        // Générer le code pour chaque classe
         for (Classe classe : classes) {
-            code.append("public class ").append(classe.getNom()).append(" {\n\n");
-
-            // Générer les attributs
-            for (Attribut attribut : classe.getAttributs()) {
-                code.append("\t")
-                        .append(visibiliteToString(attribut.getVisibilite()))
-                        .append(" ")
-                        .append(attribut.getType())
-                        .append(" ")
-                        .append(attribut.getNom())
-                        .append(";\n");
-            }
-            code.append("\n");
-
-            // Générer les relations
-            for (Relation relation : classe.getRelationsSortantes()) {
-                Classe classeArrivee = relation.getClasseArrivee();
-                String typeRelation = relationTypeToString(relation.getTypeRelation());
-                String multiplicite = cardinaliteToString(relation.getCardinalite());
-
-                code.append("\t")
-                        .append("private ")
-                        .append(multiplicite)
-                        .append("<")
-                        .append(classeArrivee.getNom())
-                        .append("> ")
-                        .append(classeArrivee.getNom().toLowerCase())
-                        .append("Relation;\n");
-            }
-            code.append("\n");
-
-            // Générer les méthodes
-            for (Methode methode : classe.getMethodes()) {
-                code.append("\t")
-                        .append(visibiliteToString(methode.getVisibilite()))
-                        .append(" ")
-                        .append(methode.getType())
-                        .append(" ")
-                        .append(methode.getNom())
-                        .append("(");
-
-                // Ajouter les paramètres
-                List<String> parametres = methode.getParametres();
-                for (int i = 0; i < parametres.size(); i++) {
-                    code.append(parametres.get(i)).append(" param").append(i);
-                    if (i < parametres.size() - 1) {
-                        code.append(", ");
-                    }
-                }
-                code.append(") {\n");
-                code.append("\t\t// TODO: Implement method\n");
-                code.append("\t}\n");
-            }
-
-            code.append("}\n\n");
+            codeJava.append(genererCodePourClasse(classe));
         }
 
+        // Afficher ou enregistrer le code généré
+        vue.mettreAJourVue("Code Java généré avec succès !");
+        System.out.println(codeJava.toString());
+    }
+
+    // Générer le code pour une classe donnée
+    private String genererCodePourClasse(Classe classe) {
+        StringBuilder code = new StringBuilder();
+
+        // Début de la classe
+        code.append("public class ").append(classe.getNom()).append(" {\n");
+
+        // Ajouter les attributs
+        for (Attribut attribut : classe.getAttributs()) {
+            code.append("\t").append(visibiliteToString(attribut.getvisibilite()))
+                    .append(" ").append(attribut.getType())
+                    .append(" ").append(attribut.getNom())
+                    .append(";\n");
+        }
+
+        code.append("\n");
+
+        // Ajouter les méthodes
+        for (Methode methode : classe.getMethodes()) {
+            code.append("\t").append(visibiliteToString(methode.getVisibilite()))
+                    .append(" ").append(methode.getRetour())
+                    .append(" ").append(methode.getNom())
+                    .append("(").append(argumentsToString(methode)).append(") {\n")
+                    .append("\t\t// TODO: Implementer cette methode\n")
+                    .append("\t}\n\n");
+        }
+
+        // Ajouter les relations sous forme de commentaires (optionnel)
+        List<Relation> relations = controleurRelation.getRelations();
+        for (Relation relation : relations) {
+            if (relation.getClasse1().equals(classe) || relation.getClasse2().equals(classe)) {
+                code.append("\t// Relation: ").append(relation.getTypeRelation().getLabel())
+                        .append(" avec ").append(
+                                relation.getClasse1().equals(classe) ? relation.getClasse2().getNom() : relation.getClasse1().getNom()
+                        ).append("\n");
+            }
+        }
+
+        // Fin de la classe
+        code.append("}\n\n");
         return code.toString();
     }
 
+    // Convertir la visibilité en chaîne de caractères Java
     private String visibiliteToString(Visibilite visibilite) {
         switch (visibilite) {
             case PUBLIC:
@@ -96,28 +97,17 @@ public class ControleurGenerationCode {
         }
     }
 
-    private String relationTypeToString(TypeRelation typeRelation) {
-        switch (typeRelation) {
-            case COMPOSITION:
-                return "composition";
-            case AGGREGATION:
-                return "aggregation";
-            case ASSOCIATION_FORTE:
-                return "association forte";
-            case ASSOCIATION_FAIBLE:
-                return "association faible";
-            default:
-                return "";
+    // Convertir les arguments de méthode en chaîne de caractères
+    private String argumentsToString(Methode methode) {
+        StringBuilder arguments = new StringBuilder();
+        List<Attribut> params = methode.getParametres();
+        for (int i = 0; i < params.size(); i++) {
+            Attribut param = params.get(i);
+            arguments.append(param.getType()).append(" ").append(param.getNom());
+            if (i < params.size() - 1) {
+                arguments.append(", ");
+            }
         }
-    }
-
-    private String cardinaliteToString(Cardinalite cardinalite) {
-        CardinaliteEnum min = cardinalite.getMin();
-        CardinaliteEnum max = cardinalite.getMax();
-        if (max == CardinaliteEnum.UN) {
-            return ""; // Simple référence unique
-        } else {
-            return "List"; // Liste pour les collections (multiplicité)
-        }
+        return arguments.toString();
     }
 }

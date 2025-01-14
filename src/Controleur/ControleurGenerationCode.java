@@ -35,8 +35,10 @@ public class ControleurGenerationCode {
             codeJava.append(genererCodePourClasse(classe));
         }
 
-        // Afficher ou enregistrer le code généré
-        vue.mettreAJourVue("Code Java généré avec succès !");
+        // Appeler la méthode de la vue pour afficher le code généré
+        vue.afficherCodeGenere(codeJava.toString());
+
+        // Afficher également le code dans la console
         System.out.println(codeJava.toString());
     }
 

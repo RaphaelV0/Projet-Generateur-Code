@@ -26,7 +26,7 @@ public class VueDiagrammeClasse extends Application {
     private MenuButton classDropdown;  // Liste déroulante pour les classes
     private MenuButton relationDropdown;  // Liste déroulante pour les relations
     private Button generateCodeButton;  // Bouton pour générer le code
-    private Label notificationLabel;  // Label pour afficher les notifications
+    private Label notificationLabel;  // Label pour  les notifications
 
     private ControleurDiagrammeClasse controleurDiagrammeClasse;  // Contrôleur des classes
     private ControleurRelation controleurRelation;  // Contrôleur des relations
@@ -80,8 +80,24 @@ public class VueDiagrammeClasse extends Application {
         MenuItem quitterItem = new MenuItem("Quitter");
         fichierMenu.getItems().addAll(ouvrirItem, enregistrerItem, sauvegarderItem, new SeparatorMenuItem(), quitterItem);
 
-        // Ajouter les menus à la barre de menu
-        menuBar.getMenus().add(fichierMenu);
+        // Menu Édition
+        Menu editionMenu = new Menu("Édition");
+        MenuItem annulerItem = new MenuItem("Annuler");
+        MenuItem copierItem = new MenuItem("Copier");
+        MenuItem collerItem = new MenuItem("Coller");
+        editionMenu.getItems().addAll(annulerItem, copierItem, collerItem);
+
+
+
+        // Menu Aide
+        Menu aideMenu = new Menu("Aide");
+        MenuItem aProposItem = new MenuItem("À propos");
+        MenuItem aideItem = new MenuItem("Aide");
+        aideMenu.getItems().addAll(aideItem, aProposItem);
+
+
+        menuBar.getMenus().addAll(fichierMenu, editionMenu, aideMenu);
+        root.setTop(menuBar);
         root.setTop(menuBar);
 
         // Gestion des actions du menu Fichier
@@ -122,7 +138,7 @@ public class VueDiagrammeClasse extends Application {
         controlPanel.getChildren().addAll(classDropdown, relationDropdown, generateCodeButton);
 
         // Zone de notification
-        notificationLabel = new Label("Bienvenue dans le générateur UML !");
+        notificationLabel = new Label("Bienvenue dans le générateur de code JAVA !");
         notificationLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
 
         bottomPanel.getChildren().addAll(controlPanel, notificationLabel);
@@ -256,6 +272,25 @@ public class VueDiagrammeClasse extends Application {
 
         mettreAJourVue("Relation supprimée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
     }
+    public void afficherCodeGenere(String codeJava) {
+        // Créer une alerte de type INFORMATION pour afficher le code généré
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Code Java Généré");
+        alert.setHeaderText("Voici le code généré :");
+
+        // Créer un TextArea pour afficher le code (pour avoir un affichage propre)
+        TextArea textArea = new TextArea(codeJava);
+        textArea.setEditable(false);  // Rendre le texte non modifiable
+        textArea.setWrapText(true);    // Activer le retour à la ligne automatique
+        textArea.setPrefSize(600, 400); // Définir la taille du TextArea
+
+        // Ajouter le TextArea au contenu de l'alerte
+        VBox vbox = new VBox(textArea);
+        alert.getDialogPane().setContent(vbox);
+
+        // Afficher l'alerte
+        alert.showAndWait();
+    }
 
     // Méthode pour mettre à jour la vue avec un message
     public void mettreAJourVue(String message) {
@@ -273,5 +308,22 @@ public class VueDiagrammeClasse extends Application {
 
     private void sauvegarder() {
         mettreAJourVue("Fonction de sauvegarde non implémentée.");
+    }
+    public Scene createScene() {
+        BorderPane root = new BorderPane();
+
+        // Initialiser les menus
+        initialiserMenus(root);
+
+        // Initialiser l'espace de travail
+        workspacePane = new Pane();
+        workspacePane.setStyle("-fx-background-color: white; -fx-border-color: black;");
+        workspacePane.setPrefSize(600, 400);
+        root.setCenter(workspacePane);
+
+        // Initialiser le panneau inférieur
+        initialiserPanneauInferieur(root);
+
+        return new Scene(root, 800, 600); // Création de la scène avec la taille et le contenu de la fenêtre
     }
 }

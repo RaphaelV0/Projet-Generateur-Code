@@ -19,6 +19,11 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+
 
 public class VueDiagrammeClasse extends Application {
 
@@ -26,7 +31,7 @@ public class VueDiagrammeClasse extends Application {
     private MenuButton classDropdown;  // Liste déroulante pour les classes
     private MenuButton relationDropdown;  // Liste déroulante pour les relations
     private Button generateCodeButton;  // Bouton pour générer le code
-    private Label notificationLabel;  // Label pour afficher les notifications
+    private Label notificationLabel;  // Label pour  les notifications
 
     private ControleurDiagrammeClasse controleurDiagrammeClasse;  // Contrôleur des classes
     private ControleurRelation controleurRelation;  // Contrôleur des relations
@@ -80,8 +85,24 @@ public class VueDiagrammeClasse extends Application {
         MenuItem quitterItem = new MenuItem("Quitter");
         fichierMenu.getItems().addAll(ouvrirItem, enregistrerItem, sauvegarderItem, new SeparatorMenuItem(), quitterItem);
 
-        // Ajouter les menus à la barre de menu
-        menuBar.getMenus().add(fichierMenu);
+        // Menu Édition
+        Menu editionMenu = new Menu("Édition");
+        MenuItem annulerItem = new MenuItem("Annuler");
+        MenuItem copierItem = new MenuItem("Copier");
+        MenuItem collerItem = new MenuItem("Coller");
+        editionMenu.getItems().addAll(annulerItem, copierItem, collerItem);
+
+
+
+        // Menu Aide
+        Menu aideMenu = new Menu("Aide");
+        MenuItem aProposItem = new MenuItem("À propos");
+        MenuItem aideItem = new MenuItem("Aide");
+        aideMenu.getItems().addAll(aideItem, aProposItem);
+
+
+        menuBar.getMenus().addAll(fichierMenu, editionMenu, aideMenu);
+        root.setTop(menuBar);
         root.setTop(menuBar);
 
         // Gestion des actions du menu Fichier
@@ -122,7 +143,7 @@ public class VueDiagrammeClasse extends Application {
         controlPanel.getChildren().addAll(classDropdown, relationDropdown, generateCodeButton);
 
         // Zone de notification
-        notificationLabel = new Label("Bienvenue dans le générateur UML !");
+        notificationLabel = new Label("Bienvenue dans le générateur de code JAVA !");
         notificationLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
 
         bottomPanel.getChildren().addAll(controlPanel, notificationLabel);
@@ -255,6 +276,25 @@ public class VueDiagrammeClasse extends Application {
                 ((Text) node).getText().contains(relation.getTypeRelation().getLabel()));
 
         mettreAJourVue("Relation supprimée entre " + relation.getClasse1().getNom() + " et " + relation.getClasse2().getNom());
+    }
+    public void afficherCodeGenere(String codeJava) {
+        // Créer une alerte de type INFORMATION pour afficher le code généré
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Code Java Généré");
+        alert.setHeaderText("Voici le code généré :");
+
+        // Créer un TextArea pour afficher le code (pour avoir un affichage propre)
+        TextArea textArea = new TextArea(codeJava);
+        textArea.setEditable(false);  // Rendre le texte non modifiable
+        textArea.setWrapText(true);    // Activer le retour à la ligne automatique
+        textArea.setPrefSize(600, 400); // Définir la taille du TextArea
+
+        // Ajouter le TextArea au contenu de l'alerte
+        VBox vbox = new VBox(textArea);
+        alert.getDialogPane().setContent(vbox);
+
+        // Afficher l'alerte
+        alert.showAndWait();
     }
 
     // Méthode pour mettre à jour la vue avec un message

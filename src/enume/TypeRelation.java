@@ -2,9 +2,7 @@ package enume;
 
 public enum TypeRelation {
     ASSOCIATION("Association"),
-    HERITAGE("Héritage"),
-    AGREGATION("Agrégation"),
-    COMPOSITION("Composition");
+    HERITAGE("Héritage");
 
     private final String label;
 

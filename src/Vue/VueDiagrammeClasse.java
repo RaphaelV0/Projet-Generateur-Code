@@ -23,6 +23,14 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import java.util.Optional;
+import Modele.Attribut;
+import Modele.Methode;
 
 
 public class VueDiagrammeClasse extends Application {
@@ -182,14 +190,46 @@ public class VueDiagrammeClasse extends Application {
 
     // Méthode pour ajouter une classe dans la vue
     public void ajouterClasseVue(Classe classe) {
-        Text textClasse = new Text(classe.getX(), classe.getY(), classe.getNom());
-        textClasse.setOnMouseClicked(event -> {
+        // Créer un conteneur pour la classe
+        VBox classeBox = new VBox();
+        classeBox.setLayoutX(classe.getX());
+        classeBox.setLayoutY(classe.getY());
+        classeBox.setStyle("-fx-border-color: black; -fx-padding: 10; -fx-background-color: lightgray;");
+
+        // Ajouter le nom de la classe
+        Text textNomClasse = new Text(classe.getNom());
+        textNomClasse.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        classeBox.getChildren().add(textNomClasse);
+
+        // Ajouter les attributs
+        Text textAttributs = new Text("Attributs:");
+        textAttributs.setStyle("-fx-underline: true;");
+        classeBox.getChildren().add(textAttributs);
+        for (Attribut attribut : classe.getAttributs()) {
+            Text textAttribut = new Text("- " + attribut.getvisibilite() + " " + attribut.getType() + " " + attribut.getNom());
+            classeBox.getChildren().add(textAttribut);
+        }
+
+        // Ajouter les méthodes
+        Text textMethodes = new Text("Méthodes:");
+        textMethodes.setStyle("-fx-underline: true;");
+        classeBox.getChildren().add(textMethodes);
+        for (Methode methode : classe.getMethodes()) {
+            Text textMethode = new Text("- " + methode.getVisibilite() + " " + methode.getType() + " " + methode.getNom() + "()");
+            classeBox.getChildren().add(textMethode);
+        }
+
+        // Ajouter un événement de clic pour sélectionner la classe
+        classeBox.setOnMouseClicked(event -> {
             classeSelectionnee = classe;
-            textClasse.setStyle("-fx-font-weight: bold; -fx-fill: blue;");
+            textNomClasse.setStyle("-fx-font-weight: bold; -fx-fill: blue;"); // Highlight the selected class
             mettreAJourVue("Classe sélectionnée: " + classe.getNom());
         });
-        workspacePane.getChildren().add(textClasse);
+
+        // Ajouter le conteneur de la classe à la vue
+        workspacePane.getChildren().add(classeBox);
     }
+
 
     // Méthode pour ajouter une relation dans la vue
     public void ajouterRelationVue(Relation relation) {

@@ -62,17 +62,7 @@ public class ControleurDiagrammeClasse {
         }
     }
 
-    // Supprimer une classe sur clic
-    public void supprimerClasseSurClic(MouseEvent event) {
-        Classe classeSelectionnee = vue.getClasseSelectionnee();
-        if (classeSelectionnee != null) {
-            classes.remove(classeSelectionnee);
-            vue.supprimerClasseVue(classeSelectionnee);
-            vue.mettreAJourVue("Classe supprimée : " + classeSelectionnee.getNom());
-        } else {
-            vue.mettreAJourVue("Aucune classe sélectionnée pour suppression.");
-        }
-    }
+
 
     // Méthode pour ajouter ou modifier des attributs
     private void ajouterOuModifierAttributs(Classe classe) {
@@ -177,6 +167,16 @@ public class ControleurDiagrammeClasse {
             vue.mettreAJourVue("Les deux classes, le type de relation et les cardinalités doivent être sélectionnés pour créer une relation.");
         }
     }
-
+    // Supprimer une classe sur clic
+    public void supprimerClasseSurClic(MouseEvent event) {
+        Classe classeSelectionnee = vue.getClasseSelectionnee();
+        if (classeSelectionnee != null) {
+            classes.remove(classeSelectionnee);
+            vue.supprimerClasseVue(classeSelectionnee);
+            vue.mettreAJourVue("Classe supprimée : " + classeSelectionnee.getNom());
+        } else {
+            vue.mettreAJourVue("Aucune classe sélectionnée pour suppression.");
+        }
+    }
 
 }

@@ -19,6 +19,19 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import java.util.Optional;
+import Modele.Attribut;
+import Modele.Methode;
+
 
 public class VueDiagrammeClasse extends Application {
 
@@ -177,14 +190,56 @@ public class VueDiagrammeClasse extends Application {
 
     // Méthode pour ajouter une classe dans la vue
     public void ajouterClasseVue(Classe classe) {
-        Text textClasse = new Text(classe.getX(), classe.getY(), classe.getNom());
-        textClasse.setOnMouseClicked(event -> {
+        VBox classeBox = new VBox();
+        classeBox.setLayoutX(classe.getX());
+        classeBox.setLayoutY(classe.getY());
+        classeBox.setStyle("-fx-border-color: black; -fx-padding: 10; -fx-background-color: lightgray;");
+
+        // Ajouter les éléments de la classe à la boîte
+        updateClasseBox(classeBox, classe);
+
+        // Ajouter un événement de clic pour sélectionner la classe
+        classeBox.setOnMouseClicked(event -> {
             classeSelectionnee = classe;
-            textClasse.setStyle("-fx-font-weight: bold; -fx-fill: blue;");
+            classeBox.setStyle("-fx-border-color: blue; -fx-padding: 10; -fx-background-color: lightgray;");
             mettreAJourVue("Classe sélectionnée: " + classe.getNom());
         });
-        workspacePane.getChildren().add(textClasse);
+
+        // Associer la boîte à la classe pour un rafraîchissement futur
+        classe.setClasseBox(classeBox);
+
+        // Ajouter le conteneur de la classe à la vue
+        workspacePane.getChildren().add(classeBox);
     }
+
+    // Méthode pour mettre à jour le contenu de la classe dans la vue
+    private void updateClasseBox(VBox classeBox, Classe classe) {
+        classeBox.getChildren().clear(); // Clear existing children
+
+        // Ajouter le nom de la classe
+        Text textNomClasse = new Text(classe.getNom());
+        textNomClasse.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        classeBox.getChildren().add(textNomClasse);
+
+        // Ajouter les attributs
+        Text textAttributs = new Text("Attributs:");
+        textAttributs.setStyle("-fx-underline: true;");
+        classeBox.getChildren().add(textAttributs);
+        for (Attribut attribut : classe.getAttributs()) {
+            Text textAttribut = new Text("- " + attribut.getVisibilite() + " " + attribut.getType() + " " + attribut.getNom());
+            classeBox.getChildren().add(textAttribut);
+        }
+
+        // Ajouter les méthodes
+        Text textMethodes = new Text("Méthodes:");
+        textMethodes.setStyle("-fx-underline: true;");
+        classeBox.getChildren().add(textMethodes);
+        for (Methode methode : classe.getMethodes()) {
+            Text textMethode = new Text("- " + methode.getVisibilite() + " " + methode.getTypeRetour() + " " + methode.getNom() + "()");
+            classeBox.getChildren().add(textMethode);
+        }
+    }
+
 
     // Méthode pour ajouter une relation dans la vue
     public void ajouterRelationVue(Relation relation) {
